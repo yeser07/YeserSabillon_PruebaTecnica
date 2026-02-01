@@ -1,10 +1,8 @@
-﻿using System.Runtime.InteropServices.Marshalling;
-
+﻿
 namespace YeserSabillon_PruebaTecnica.Repositorios
 {
     using Dapper;
     using Microsoft.Data.SqlClient;
-    using System.Reflection.Metadata.Ecma335;
     using YeserSabillon_PruebaTecnica.Configuraciones;
     using YeserSabillon_PruebaTecnica.Models;
 
@@ -71,7 +69,16 @@ namespace YeserSabillon_PruebaTecnica.Repositorios
             return conn.Query<Cliente>(
                 "SELECT * FROM CLIENTE"
             ).ToList();
-         }
+        }
+
+        public Cliente ObtenerCliente(int IdCliente)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            return conn.QueryFirstOrDefault<Cliente>(
+                "SELECT * FROM CLIENTE WHERE IdCliente = @IdCliente",
+                new { IdCliente }
+            );
+        }
 
         
 

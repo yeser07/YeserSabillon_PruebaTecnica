@@ -7,8 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-    <Folder Include="Pages\Cliente\" />
     <Folder Include="Pages\Producto\" />
   </ItemGroup>
 
