@@ -1,0 +1,63 @@
+﻿@model List<YeserSabillon_PruebaTecnica.Models.Producto>
+@{
+}
+
+<h1>Productos</h1>
+<p>
+    <a asp-controller="Producto" asp-action="Create" class="btn btn-primary">Crear Nuevo Producto</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Categoría</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Nombre)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Precio)
+            </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Stock)
+                </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Categoria)
+            </td>
+            <td>
+                    <a asp-controller="Producto" asp-action="Edit" asp-route-id="@item.IdProducto" class="btn btn-sm btn-warning">Editar</a>
+                    <form asp-controller="Producto" asp-action="Delete" method="post" style="display:inline;"
+                          onsubmit="return confirm('¿Está seguro que desea eliminar este producto?');">
+                        <input type="hidden" name="IdProducto" value="@item.IdProducto" />
+                        <form asp-controller="Producto" asp-action="Delete" method="post" style="display:inline;"
+                              onsubmit="return confirm('¿Está seguro que desea eliminar este Producto?');">
+                            <input type="hidden" name="IdProducto" value="@item.IdProducto" />
+                            <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                        </form>
+                    </form>
+              </td>
+            </tr>
+        }
+    </tbody>
+    </table>
+    <nav aria-label="Paginación">
+        <ul class="pagination">
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                    <a class="page-link" asp-controller="Producto" asp-action="Index" asp-route-page="@i">
+                        @i
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>

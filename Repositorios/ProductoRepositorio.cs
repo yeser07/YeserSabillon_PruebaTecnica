@@ -24,7 +24,8 @@
                 {
                     producto.Nombre,
                     producto.Precio,
-                    producto.Stock
+                    producto.Stock,
+                    producto.Categoria
                 },
                 commandType: System.Data.CommandType.StoredProcedure
                 );
@@ -39,7 +40,8 @@
                          IdProducto,
                          producto.Nombre,
                          producto.Precio,
-                         producto.Stock
+                         producto.Stock,
+                         producto.Categoria
                      },
          commandType: System.Data.CommandType.StoredProcedure
                  );
@@ -65,6 +67,16 @@
                 ).ToList();
         }
 
+        public Producto ObtenerProductoPorId(int IdProducto)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            return conn.QueryFirstOrDefault<Producto>("SELECT * FROM PRODUCTO WHERE IdProducto = @IdProducto ",
+                new
+                {
+                    IdProducto,
+                }
+            );
+        }
 
     }
 }

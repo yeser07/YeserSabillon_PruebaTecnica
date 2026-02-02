@@ -11,6 +11,10 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 builder.Services.AddScoped<ClienteRepositorio>();
+builder.Services.AddScoped<ProductoRepositorio>();
+builder.Services.AddScoped<FacturaHeaderRepositorio>();
+builder.Services.AddScoped<FacturaDetalleRepositorio>();
+
 
 var app = builder.Build();
 
