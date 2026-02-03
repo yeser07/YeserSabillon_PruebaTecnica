@@ -11,4 +11,10 @@
 
 
     }
+
+    public class FacturaDetalleRequest
+    {
+        public Factura_Header FacturaHeader { get; set; }
+        public List<Factura_Detalle> FacturaDetalles { get; set; }
+    }
 }

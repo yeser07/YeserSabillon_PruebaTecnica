@@ -1,4 +1,5 @@
-﻿@model List<YeserSabillon_PruebaTecnica.Models.Cliente>
+﻿@model YeserSabillon_PruebaTecnica.Models.FacturaViewModel
+
 @{
     ViewData["Title"] = "Factura";
 }
@@ -19,7 +20,7 @@
                 <div class="form-group">
                     <label for="ClientesSelect" class="control-label">Cliente:</label>
                     <select id="ClientesSelect" name="ClientesSelect" class="form-control">
-                        @foreach (var cliente in Model)
+                        @foreach (var cliente in Model.Clientes)
                         {
                             <option value="">-- Seleccione un cliente --</option>
                             <option value="@cliente.IdCliente">
@@ -31,39 +32,342 @@
             </div>
         </div>
         <div class="row mt-3">
+            <div class="col-md-12 text-center">
+                <button id="btnFacturaMontos" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#detalleModalCenter" hidden>Generar Factura</button>
+            </div>
+        </div>
+        <div class="row mt-3">
             <div class="col-md-12 text-end">
-                <button id="btnAgregarProducto" class="btn btn-primary">Agregar Producto</button>
+                <button id="btnAgregarProducto" class="btn btn-primary" data-bs-toggle="modal"data-bs-target="#exampleModalCenter">Agregar Producto</button>
             </div>
         </div>
 
     </section>
     <section id="section-detalle-factura">
         <h3>Detalle de la Factura</h3>
-        <table class="table table-bordered">
+        <table class="table table-bordered" id="tabla-detalle-productos">
             <thead>
                 <tr>
                     <th>Producto</th>
                     <th>Cantidad</th>
                     <th>Precio Unitario</th>
-                    <th>Total</th>
+                    <th>Sub Total</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Aquí se agregarán las filas de detalle de la factura -->
+               
             </tbody>
         </table>
     </section>
 </div>
 
+<div class="modal fade" id="exampleModalCenter" tabindex="-1"
+     aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">
+                    Agregar Producto
+                </h5>
+                <button type="button" class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label for="productoSelect" class="control-label">Producto</label>
+                <select class="form-control mb-3" id="productoSelect">
+                    @foreach (var producto in Model.Productos)
+                    {
+                        <option value="@producto.IdProducto">
+                            @producto.Nombre
+                        </option>
+                    }
+                </select>
+                <label form="precioProducto" class="control-label">Precio</label>
+                <input type="text" id="precioProducto" class="form-control mb-2" placeholder="Precio" readonly />
+                <label for="stockProducto" class="control-label">Stock</label>
+                <input type="text" id="stockProducto" class="form-control" placeholder="Stock" readonly />
+                <label form="cantidad" class="control-label">Cantidad</label>
+                <input type="number" id="cantidad" name="cantidad" class="form-control mb-2" placeholder="Cantidad" min="1" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Cerrar
+                </button>
+                <button type="button" class="btn btn-primary" id="agregarProductoTabla" name="agregarProductoTabla" onclick="">
+                    Agregar Detalle
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="detalleModalCenter" tabindex="-1"
+     aria-labelledby="detalleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detalleModalCenterTitle">
+                    Agregar Producto
+                </h5>
+                <button type="button" class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered" id="tabla-detalle-montos">
+                    <thead>
+                        <tr>
+                            <th>Concepto</th>
+                            <th>Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Sub Total</td>
+                            <td id="subtotal"></td>
+                        </tr>
+                        <tr>
+                            <td>Impuesto</td>
+                            <td id="impuesto"></td>
+                        </tr>
+                        <tr>
+                            <td>Descuento</td>
+                            <td>0.00</td>
+                        </tr>
+                        <tr>
+                            <td>Total</td>
+                            <td id="totalFactura"></td>
+                        </tr>
+                        
+                   </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Cerrar
+                </button>
+                <button type="button" class="btn btn-warning" id="btnGuardarFactura" name="btnGuardarFactura">
+                    Guardar Factura <i class="bi bi-check-circle"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 
 @section Scripts {
     <script>
-        $(document).ready(function () {
-            $('#ClientesSelect').select2({
-                placeholder: "Seleccione un cliente",
-                allowClear: true
+
+        let productos =[];
+        let productoDetalle =[];
+
+
+
+
+    $(document).ready(function () {
+            limpiarInputsModal();
+
+                $('#ClientesSelect').select2({
+                    placeholder: "Seleccione un cliente",
+                    allowClear: true
+                });
+
+
+                $('#exampleModalCenter').on('shown.bs.modal', function () {
+
+                    if (!$('#productoSelect').hasClass("select2-hidden-accessible")) {
+                        $('#productoSelect').select2({
+                            dropdownParent: $('#exampleModalCenter'),
+                            placeholder: "Seleccionar un producto",
+                            allowClear: true,
+                            width: '100%'
+                        });
+                    }
+
+                });
+
+
+        $.ajax({
+                  url: "/Factura/ListaProductosJson",
+                type:"GET",
+                dataType:"json",
+                success:function(data){
+                    productos = data;
+                },
+                error:function(error){
+                    console.log("Error al obtener los productos:", error);
+                }
+         });
+
+         $('#productoSelect').on('select2:select', function (e) {
+
+                const idProducto = parseInt(e.params.data.id);
+                console.log(idProducto);
+                const prod = productos.find(p => p.idProducto === idProducto);
+
+                if (!prod) return;
+
+                $('#precioProducto').val(prod.precio);
+                $('#stockProducto').val(prod.stock);
             });
-        });
+
+
+        function agregarProductoDetalle()
+        {
+            const idProducto = parseInt($('#productoSelect').val());
+            const cantidad = parseInt($('#cantidad').val());
+            const stock = parseInt($('#stockProducto').val());
+            const precio = parseFloat($('#precioProducto').val());
+            const subTotal = cantidad * precio;
+            const nombreProducto = productos.find(p => p.idProducto === idProducto)?.nombre || "Desconocido";
+
+
+
+            if (isNaN(cantidad) || cantidad <= 0) {
+                alert("Por favor, ingrese una cantidad válida.");
+                return;
+            }
+            if (cantidad > stock) {
+                alert("La cantidad solicitada excede el stock disponible.");
+                return;
+            }
+            productoDetalle.push({
+                idProducto: idProducto,
+                numeroDetalle: productoDetalle.length + 1,
+                nombreProducto: nombreProducto,
+                cantidad: cantidad,
+                precioUnitario: precio,
+                total: subTotal
+            });
+
+            cargarTablaDetalle();
+
+        }
+
+        function cargarTablaDetalle()
+        {
+            const tbody = $('#tabla-detalle-productos tbody');
+                tbody.empty();
+                productoDetalle.forEach(detalle => {
+                    const fila = `<tr>
+                                    <td>${detalle.nombreProducto}</td>
+                                    <td>${detalle.cantidad}</td>
+                                    <td>${detalle.precioUnitario.toFixed(2)}</td>
+                                    <td>${detalle.total.toFixed(2)}</td>
+                                    <td>
+                                            <button class="btn btn-sm btn-danger btn-eliminar-detalle" data-id="${detalle.numeroDetalle}"><span class="bi bi-trash"></span></button>
+                                    </td>
+                                  </tr>`;
+                    tbody.append(fila);
+             });
+        }
+
+            function limpiarInputsModal()
+            {
+                $('#cantidad').val('');
+                $('#precioProducto').val('');
+                $('#stockProducto').val('');
+                $('#productoSelect').val(null).trigger('change');
+            }
+
+             $(document).on('click', '#agregarProductoTabla', function () {
+               agregarProductoDetalle();
+               limpiarInputsModal();
+                    btnFacturaMontos();
+          });
+
+            $(document).on('click', '.btn-eliminar-detalle', function () {
+                const numeroDetalle = parseInt($(this).data('id'));
+                productoDetalle = productoDetalle.filter(detalle => detalle.numeroDetalle !== numeroDetalle);
+                cargarTablaDetalle();
+                limpiarInputsModal();
+                    btnFacturaMontos();
+             });
+
+                function btnFacturaMontos()
+                {
+                    if(productoDetalle.length > 0)
+                    {
+                        $('#btnFacturaMontos').removeAttr('hidden');
+                    }
+                    else
+                    {
+                        $('#btnFacturaMontos').attr('hidden', 'hidden');
+                    }
+                }
+
+                $(document).on('click','#btnFacturaMontos', function(){
+                    let subtotal = 0;
+                    productoDetalle.forEach(detalle => {
+                        subtotal += detalle.total;
+                    });
+                    const impuesto = subtotal * 0.15; 
+                    const total = subtotal + impuesto;
+                    $('#subtotal').text(subtotal.toFixed(2));
+                    $('#impuesto').text(impuesto.toFixed(2));
+                    $('#totalFactura').text(total.toFixed(2));
+
+                });
+
+            function guardarFactura()
+            {
+                const idCliente = parseInt($('#ClientesSelect').val());
+                const fecha = $('#Fecha').val();
+                if(isNaN(idCliente))
+                {
+                    alert("Por favor, seleccione un cliente.");
+                    return;
+                }
+                if(fecha === "")
+                {
+                    alert("Por favor, ingrese una fecha.");
+                    return;
+                }
+                if(productoDetalle.length === 0)
+                {
+                    alert("La factura debe tener al menos un producto.");
+                    return;
+                }
+                    const request = {
+                        facturaHeader: {
+                            idCliente: idCliente,
+                            fecha: fecha
+                        },
+                        facturaDetalles: productoDetalle
+                    };
+                $.ajax({
+                    url: "/Factura/GuardarFactura",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(request),
+                    success: function (response) {
+
+                        if (!response.success) {
+                            alert(response.message);
+                            return;
+                        }
+
+                        alert(response.message);
+                        console.log("ID Factura:", response.idFactura);
+                        location.reload();
+                    },
+                    error: function (error) {
+                        console.log("Error al guardar la factura:", error);
+                        alert("Ocurrió un error al guardar la factura.");
+                    }
+                });
+             }
+
+             $(document).on('click','#btnGuardarFactura', function(){
+                    guardarFactura();
+             });
+
+        
+    });
     </script>
 }

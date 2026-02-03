@@ -78,5 +78,14 @@
             );
         }
 
+        public List<Producto> ListarProductosDisponibles()
+        {
+            using var conn = new SqlConnection(_connectionString);
+
+            return conn.Query<Producto>(
+                "SELECT * FROM PRODUCTO WHERE Stock > 0"
+            ).ToList();
+        }
+
     }
 }

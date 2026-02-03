@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Builder;
 using YeserSabillon_PruebaTecnica.Configuraciones;
 using YeserSabillon_PruebaTecnica.Repositorios;
 
@@ -12,8 +11,7 @@ builder.Services.AddRazorPages();
 
 builder.Services.AddScoped<ClienteRepositorio>();
 builder.Services.AddScoped<ProductoRepositorio>();
-builder.Services.AddScoped<FacturaHeaderRepositorio>();
-builder.Services.AddScoped<FacturaDetalleRepositorio>();
+builder.Services.AddScoped<FacturaRepositorio>();
 
 
 var app = builder.Build();
